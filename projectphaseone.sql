@@ -74,3 +74,11 @@ CREATE TABLE ServiceRequest (
     FOREIGN KEY (mechanicWhoCreated) REFERENCES Mechanic(employeeID),
     FOREIGN KEY (mechanicWhoClosed) REFERENCES Mechanic(employeeID)
 );
+
+
+-- Load data
+\copy Customer FROM 'Customer.csv' WITH (FORMAT text, DELIMITER ',');
+\copy Car FROM 'Car.csv' WITH (FORMAT text, DELIMITER ',');
+\copy Mechanic FROM 'Mechanic.csv' WITH (FORMAT text, DELIMITER ',');
+\copy ServiceRequest FROM 'ServiceRequest.csv' WITH (FORMAT text, DELIMITER ',')
+
