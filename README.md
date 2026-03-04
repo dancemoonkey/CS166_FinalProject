@@ -1,3 +1,4 @@
+hello there this is our project
 # CS166_FinalProject
 [CS166_Project_Phase_1.pdf](https://github.com/user-attachments/files/25506161/CS166_Project_Phase_1.pdf)
 Constraints, Assumptions, and Explanations
