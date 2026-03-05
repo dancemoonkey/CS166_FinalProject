@@ -11,16 +11,14 @@
  */
 
 
-import java.sql.DriverManager;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.sql.Statement;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -236,22 +234,26 @@ public class EmbeddedSQL{
 
    public static void AddCustomer(EmbeddedSQL esql){
       try{
-         String query = "INSERT INTO Customer (customerID, firstName, lastName, Phone, Address) VALUES (";
+         String query = " ";
          System.out.print("\tEnter customer ID: ");
          int customerID = Integer.parseInt(in.readLine());
-         query += "'" + customerID + "', ";
+
          System.out.print("\tEnter customer first name: ");
-         String firstNname = in.readLine();
-         query += "'" + firstName + "', ";
+         String firstName = in.readLine();
          System.out.print("\tEnter customer last name: ");
          String lastName = in.readLine();
-         query += "'" + lastName + "', ";
          System.out.print("\tEnter customer phone number: ");
          String Phone = in.readLine();
-         query += "'" + Phone + "', ";
          System.out.print("\tEnter customer address: ");
          String Address = in.readLine();
+
+         query = "INSERT INTO Customer (customerID, firstName, lastName, Phone, Address) VALUES (";
+         query += "'" + customerID + "', ";
+         query += "'" + firstName + "', ";
+         query += "'" + lastName + "', ";
+         query += "'" + Phone + "', ";
          query += "'" + Address + "', ";
+
       
          //do some error handling that checks if the input is correct.
 
@@ -265,12 +267,31 @@ public class EmbeddedSQL{
    public static void addMechanic(EmbeddedSQL esql)
    {
       try{
-         String query = "INSERT INTO Mechanic(employeeID, firstName, lastName, yearsOfExp) VALUES (";
+         String query = " ";
          System.out.print("\tEnter employee ID: ");
          int employeeID = Integer.parseInt(in.readLine());
+         System.out.print("\tEnter mechanic first name: ");
+         String firstName = in.readLine();
+         System.out.print("\tEnter mechanic last name: ");
+         String lastName = in.readLine();
+         System.out.print("\tEnter Years of experience: ");
+         int yearsofExp = Integer.parseInt(in.readLine());
+
+         
+         query = "INSERT INTO Mechanic(employeeID, firstName, lastName, yearsOfExp) VALUES (";
          query += "'" + employeeID + "', ";
+         query += "'" + firstName + "', ";
+         query += "'" + lastName + "', ";
+         query += "'" + yearsofExp + "', ";
+         
+
+         
+         esql.executeUpdate(query);
+      }catch(Exception e){
+         System.err.println (e.getMessage());
       }
-   }
+   }//end addMechanic
+   
 
    public static void QueryExample(EmbeddedSQL esql){
       try{
