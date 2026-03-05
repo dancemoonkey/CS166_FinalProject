@@ -292,6 +292,125 @@ public class EmbeddedSQL{
       }
    }//end addMechanic
    
+    //addCar function
+    //This function should allow for adding a new car into the database. 
+    //You should provide an interface that takes as input the information of a new car
+    //and checks if the provided information are valid based on the constraints of the database schema.
+    public static void AddCar(EmbeddedSQL esql){
+        try{
+            //set up variables for user input
+            String vin;
+            String make;
+            String model;
+            int year;
+            int ownerID;
+
+            //get VIN input and validate it
+            while(true){
+                System.out.print("\tEnter VIN: ");
+                //this handles if the user just presses "enter" without actually typing anything
+                vin = in.readLine().trim();
+                if(vin.isEmpty()){
+                    System.out.println("VIN cannot be empty.");
+                    continue;
+                }
+
+                //VIN is unique since it's a primary key of Car.
+                //so we also need to do a uniqueness check for the VIN
+                //we run a query to count how many cars have the same VIN
+                String vinCheck = "SELECT COUNT(*) FROM Car WHERE VIN = '" + vin + "'";
+                ResultSet queryResult = esql._connection.createStatement().executeQuery(vinCheck);
+                queryResult.next();
+                //if the count is greater than 0, it means a car with the same VIN already exists
+                int count = queryResult.getInt(1);
+                if(count > 0){
+                    System.out.println("A car with this VIN already exists.");
+                    continue;
+                }
+                //if we got here, the VIN is valid and unique! great! break out of the loop
+                break;
+            }
+
+            //next up, the Make. read input and validate
+            while(true){
+                System.out.print("\tEnter Make: ");
+                //handles if the user just presses "enter" without typing anything
+                make = in.readLine().trim();
+                if(make.isEmpty()){
+                    System.out.println("Make cannot be empty.");
+                    continue;
+                }
+                break;
+            }
+
+            //next, the Model. read input and validate
+            while(true){
+                System.out.print("\tEnter Model: ");
+                //again, this handles if user just presses "enter" without typing anything
+                model = in.readLine().trim();
+                if(model.isEmpty()){
+                    System.out.println("Model cannot be empty.");
+                    continue;
+                }
+                break;
+            }
+
+            //moving on to Year. read input and validate
+            while(true){
+                System.out.print("\tEnter Year: ");
+                String input = in.readLine().trim();
+                //make sure the year is a number. if so, turn the string into an integer.
+                if(input.matches("\\d+")){
+                    year = Integer.parseInt(input);
+                    break;
+                } 
+                else {
+                    System.out.println("Year must be a number.");
+                }
+            }
+
+            //finally, the ownerID. read input and validate
+            while(true){
+                System.out.print("\tEnter Owner ID: ");
+                String input = in.readLine().trim();
+                //make sure the ownerID is a number. if so, turn the string into an integer.
+                if(input.matches("\\d+")){
+                    ownerID = Integer.parseInt(input);
+
+                    //we also need to make sure the owner actually exists
+                    //so we run a query to count how many customers have the same customerID as the ownerID the user gave
+                    //ownerID is a foreign key that references customerID in the Customer table
+                    //so it has to match an existing customerID
+                    String ownerCheck = "SELECT COUNT(*) FROM Customer WHERE customerID = " + ownerID;
+                    ResultSet queryResult = esql._connection.createStatement().executeQuery(ownerCheck);
+                    queryResult.next();
+                    //if the count is 0, it means there is no customer with that customerID
+                    //which means the ownerID is invalid
+                    int ownerCount = queryResult.getInt(1);
+                    if(ownerCount == 0){
+                        System.out.println("Customer does not exist. Add the customer first.");
+                        continue;
+                    }
+
+                    //if we get here, this means that the ownerID is valid. break out of the loop
+                    break;
+                } 
+                else {
+                    System.out.println("Owner ID must be a number.");
+                }
+            }
+
+            //now that all the inputs are valid, we make the SQL query
+            //and insert the new car into the database
+            String query = "INSERT INTO Car (VIN, Make, Model, Year, ownerID) VALUES (" + "'" + vin + "', '" + make + "', '" + model + "', " + year + ", " + ownerID + ")";
+            esql.executeUpdate(query);
+            System.out.println("Car added successfully!");
+
+        }
+        catch(Exception e){
+            System.err.println("FAILED to add car: " + e.getMessage());
+        }
+    }
 
    public static void QueryExample(EmbeddedSQL esql){
       try{
