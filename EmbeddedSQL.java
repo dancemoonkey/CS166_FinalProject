@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -234,20 +236,89 @@ public class EmbeddedSQL{
 
    public static void AddCustomer(EmbeddedSQL esql){
       try{
-         String query = " ";
-         System.out.print("\tEnter customer ID: ");
-         int customerID = Integer.parseInt(in.readLine());
+         int customerID;
+         String firstName;
+         String lastName;
+         String Phone;
+         String Address;
 
+
+         while (true) { 
+            System.out.print("\tEnter customer ID: ");
+            String customerInput = in.readLine().trim();
+            if(customerInput.isEmpty()) {
+               System.out.print("\tError: customer ID cannot be empty!");
+               continue;
+            }
+            try {
+               customerID = Integer.parseInt(customerInput);
+               if(customerID <= 0) {
+               System.out.print("\tError: customer ID cannot be zero/negative!");
+               continue;
+            }
+            break;
+
+         }catch (NumberFormatException e) {
+               System.out.print("\tError: customer ID must only be numbers!");
+         }
+         
+      }
+
+      while (true) { 
          System.out.print("\tEnter customer first name: ");
-         String firstName = in.readLine();
-         System.out.print("\tEnter customer last name: ");
-         String lastName = in.readLine();
-         System.out.print("\tEnter customer phone number: ");
-         String Phone = in.readLine();
-         System.out.print("\tEnter customer address: ");
-         String Address = in.readLine();
+         firstName = in.readLine().trim();
+         if(firstName.isEmpty()) {
+            System.out.print("\tError: customer first name cannot be empty!");
+            continue;
+         }
+         if(!firstName.matches("[a-zA-Z'-]+")){
+            System.out.print("\tError: customer first name must only be letters!");
+         }
+         break;
+      }
 
-         query = "INSERT INTO Customer (customerID, firstName, lastName, Phone, Address) VALUES (";
+      while (true) { 
+         System.out.print("\tEnter customer last name: ");
+         lastName = in.readLine().trim();
+         if(lastName.isEmpty()) {
+            System.out.print("\tError: customer last name cannot be empty!");
+            continue;
+         }
+         if(!lastName.matches("[a-zA-Z'-]+")){
+            System.out.print("\tError: customer last name must only be letters!");
+         }
+         break;
+      }
+      while (true) { 
+         System.out.print("\tEnter customer's phone number: ");
+         Phone = in.readLine().trim();
+         if(Phone.isEmpty()) {
+            System.out.print("\tError: customer phone number cannot be empty!");
+            continue;
+         }
+         //enforces a 10 digit number nothing > / <
+         if(!Phone.matches("\\d{10}")){
+            System.out.print("\tError: invalid Phone Number!");
+         }
+         break;
+      }
+
+      while (true) { 
+         System.out.print("\tEnter customer's address: ");
+         Address = in.readLine().trim();
+         if(Address.isEmpty()) {
+            System.out.print("\tError: customer address cannot be empty!");
+            continue;
+         }
+         //ensures its has number and letter in address like 12 lake drive
+         if (!Address.matches(".*\\d+.*") || !Address.matches(".*[a-zA-Z]+.*")) {
+            System.out.print("\tError: Address must contain both numbers and letters.");
+            continue;
+        }
+         break;
+      }
+
+         String query = "INSERT INTO Customer (customerID, firstName, lastName, Phone, Address) VALUES (";
          query += "'" + customerID + "', ";
          query += "'" + firstName + "', ";
          query += "'" + lastName + "', ";
@@ -258,27 +329,95 @@ public class EmbeddedSQL{
          //do some error handling that checks if the input is correct.
 
 
-         esql.executeUpdate(query);
+      esql.executeUpdate(query);
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
    }//end AddCustomer
 
+   //TODO make sure no duplicate employeeID
    public static void addMechanic(EmbeddedSQL esql)
    {
-      try{
-         String query = " ";
-         System.out.print("\tEnter employee ID: ");
-         int employeeID = Integer.parseInt(in.readLine());
-         System.out.print("\tEnter mechanic first name: ");
-         String firstName = in.readLine();
-         System.out.print("\tEnter mechanic last name: ");
-         String lastName = in.readLine();
-         System.out.print("\tEnter Years of experience: ");
-         int yearsofExp = Integer.parseInt(in.readLine());
+      try {
+         int employeeID;
+         String firstName;
+         String lastName;
+         int yearsofExp;
+
+         while (true) { 
+            System.out.print("\tEnter employee ID: ");
+            //integer.parseINT will strictly only allow integers. excluding - for negative numbers
+            //so we need to catch that cases since we cant have '-837211' as a valid employeeID
+            String employeeInput = in.readLine().trim();
+            if(employeeInput.isEmpty()) {
+               System.out.print("\tError: employee ID cannot be empty!");
+               continue;
+            }
+            try {
+               employeeID = Integer.parseInt(employeeInput);
+               if(employeeID <= 0) {
+               System.out.print("\tError: employee ID cannot be zero/negative!");
+               continue;
+            }
+            break;
+               
+              // {Err: String::("employeeID cannot be empty");
+
+         }catch (NumberFormatException e) {
+               System.out.print("\tError: employee ID must only be numbers!");
+         }
+         
+      }
+
+         while (true) { 
+            System.out.print("\tEnter mechanic first name: ");
+            firstName = in.readLine().trim();
+            if(firstName.isEmpty()) {
+               System.out.print("\tError: employee first name cannot be empty!");
+               continue;
+            }
+            if(!firstName.matches("[a-zA-Z'-]+")){
+               System.out.print("\tError: employee first name must only be letters!");
+            }
+            break;
+         }
+
+         while (true) { 
+            System.out.print("\tEnter mechanic last name: ");
+            lastName = in.readLine().trim();
+            if(lastName.isEmpty()) {
+               System.out.print("\tError: employee last name cannot be empty!");
+               continue;
+            }
+            if(!firstName.matches("[a-zA-Z'-]+")){
+               System.out.print("\tError: employee last name must only be letters!");
+            }
+            break;
+         }
+         
+         while (true) { 
+            System.out.print("\tEnter employee's years of Experience: ");
+            String employeeYOE = in.readLine().trim();
+            if(employeeYOE.isEmpty()) {
+               System.out.print("\tError: employee YOE cannot be empty!");
+               continue;
+            }
+            try {
+               yearsofExp = Integer.parseInt(employeeYOE);
+               if(yearsofExp < 0) {
+               System.out.print("\tError: employee's YOE cannot be negative!");
+               continue;
+            }
+            break;
+
+         }catch (NumberFormatException e) {
+               System.out.print("\tError: employee's YOE must only be numbers!");
+         }
+      }
 
          
-         query = "INSERT INTO Mechanic(employeeID, firstName, lastName, yearsOfExp) VALUES (";
+         String query = "INSERT INTO Mechanic(employeeID, firstName, lastName, yearsOfExp) VALUES (";
          query += "'" + employeeID + "', ";
          query += "'" + firstName + "', ";
          query += "'" + lastName + "', ";
@@ -287,7 +426,9 @@ public class EmbeddedSQL{
 
          
          esql.executeUpdate(query);
-      }catch(Exception e){
+      
+   }
+      catch(Exception e){
          System.err.println (e.getMessage());
       }
    }//end addMechanic
@@ -410,6 +551,260 @@ public class EmbeddedSQL{
         catch(Exception e){
             System.err.println("FAILED to add car: " + e.getMessage());
         }
+    }
+
+
+    public static void initiateServiceRequest(EmbeddedSQL esql){
+      try {
+         String lastName;
+         while (true) { 
+            System.out.print("\tEnter mechanic last name: ");
+            lastName = in.readLine().trim();
+            if(lastName.isEmpty()) {
+               System.out.print("\tError: employee last name cannot be empty!");
+               continue;
+            }
+            if(!lastName.matches("[a-zA-Z'-]+")){
+               System.out.print("\tError: employee last name must only be letters!");
+            }
+            break;
+         }
+         //searching db of existing customers.
+         String searchQuery = "SELECT customerID, firstName, lastName FROM Customer WHERE lastName = '" + lastName + " '";
+         ResultSet searchResult = esql._connection.createStatement().executeQuery(searchQuery);
+
+         //thought about using hashmap but its only better for looking up by ID. 
+         //List is the better option here to store the results for now
+
+         List<Integer> customerIDS = new ArrayList<>();
+         List<String> customersNames = new ArrayList<>();
+
+         while(searchResult.next())
+         {
+            customerIDS.add(searchResult.getInt("customerID"));
+            customersNames.add(searchResult.getString("firstName") + " " + searchResult.getString("lastName"));
+         }
+         searchResult.close();
+
+         int selectedCustomer;
+
+
+
+
+         if(customerIDS.isEmpty())
+         {
+            System.out.println("\tCustomer with last name" + lastName + " not Found.");
+            //client application should provide the option of adding a new customer
+            int choice = 0;
+            System.out.println("Would you like to add a new customer?. 1) Yes 2) No");
+            while (true) {
+               String choiceInput = in.readLine().trim();
+               if (choiceInput.matches("\\d+")) {
+                   choice = Integer.parseInt(choiceInput);
+                   if (choice == 1 || choice == 2) {
+                       break;
+                   }
+               }
+               System.out.println("Invalid choice. Please enter 1 or 2.");
+           }
+           
+           if (choice == 1) {
+               AddCustomer(esql);
+               ResultSet newResult = esql._connection.createStatement().executeQuery("SELECT MAX(customerID) FROM Customer");
+               if (newResult.next()) {
+                   selectedCustomer = newResult.getInt(1);
+               }
+               newResult.close();
+           } else {
+               System.out.println("Service request cancelled. Goodbye.");
+               return;
+           }
+       }
+       else if(customerIDS.size() == 1)
+       {
+         selectedCustomer = customerIDS.get(0);
+         System.out.println("\tMenu:\n " + customersNames.get(0) + " (ID: " + selectedCustomer + ")");
+
+        } else {
+            // many customers found with the same last name
+            System.out.println("Multiple customers found with last name '" + lastName + "':");
+            for (int i = 0; i < customerIDS.size(); i++) {
+                System.out.println("\t" + (i + 1) + ". " + customersNames.get(i) + " (ID: " + customerIDS.get(i) + ")");
+            }
+
+            // keep asking until the user gives a valid selection
+            while (true) {
+                System.out.print("\tSelect the customer: ");
+                String inputChoice = in.readLine().trim();
+                if (inputChoice.matches("\\d+")) {
+                    int selection = Integer.parseInt(inputChoice) - 1;
+                    if (selection >= 0 && selection < customerIDS.size()) {
+                        selectedCustomer = customerIDS.get(selection);
+                        break;
+                    }
+                }
+                System.out.println("Invalid selection. Try again.");
+            }
+        }
+
+         //listing all cars associated with that client
+         String carQuery = "SELECT VIN, Make, Model, Year FROM Car WHERE ownerID = " + selectedCustomer;
+         ResultSet carResult = esql._connection.createStatement().executeQuery(carQuery);
+
+         List<String> CarVINS = new ArrayList<>();
+         List<String> CarDescs = new ArrayList<>();
+
+         while(carResult.next())
+         {
+            CarVINS.add(carResult.getString("VIN"));
+            CarDescs.add(carResult.getString("VIN") + " " +carResult.getString("Make") + " " + carResult.getString("Model") + " " + carResult.getString("Year"));
+         }
+
+         carResult.close();
+
+         //option to initiate serreq for one of car thru a vin selection since its primary key
+         String SelectedVIN;
+
+         if(CarVINS.isEmpty())
+         {
+            System.out.println("\tNo cars found for this customer. Please add a car first.");
+            AddCar(esql);
+            ResultSet newCarResult = esql._connection.createStatement().executeQuery("SELECT VIN FROM Car WHERE OwnerID = " + selectedCustomer + " ORDER BY VIN DESC LIMIT 1");
+            if (newCarResult.next()) {
+                SelectedVIN = newCarResult.getString(1);
+            }
+            newCarResult.close();
+         }
+         else {
+            System.out.println("Customers cars:");
+            for (int i = 0; i < CarVINS.size(); i++) {
+                System.out.println("\t" + (i + 1) + ". " + CarDescs.get(i));
+            }
+            System.out.println("\t" + (CarVINS.size() + 1) + ". Add a new car");
+
+            while (true) {
+                System.out.print("\tSelect the car: ");
+                String carChoice = in.readLine().trim();
+                if (carChoice.matches("\\d+")) {
+                    int carSelection = Integer.parseInt(carChoice) - 1;
+                    if(carSelection == CarVINS.size()) {
+                        AddCar(esql);
+                        ResultSet newCarResult = esql._connection.createStatement().executeQuery("SELECT VIN FROM Car WHERE OwnerID = " + selectedCustomer + " ORDER BY VIN DESC LIMIT 1");
+                        if (newCarResult.next()) {
+                            SelectedVIN = newCarResult.getString(1);
+                        }
+                        newCarResult.close();
+                        break;
+                    }
+                    else if (carSelection >= 0 && carSelection < CarVINS.size()) {
+                        SelectedVIN = CarVINS.get(carSelection);
+                        break;
+                    }
+                }
+                System.out.println("Invalid selection. Try again.");
+         }
+
+         //at this point we have the selected customer and the selected car, we can now create a service request for that car
+         int requestID = (int)(Math.random() * 100); //generate a random request ID.
+         String openDate;
+         //String closeDate;
+         int odometerReading;
+         String custComments;
+         //String mechComments;
+         //float finalBill;
+         //String status;
+         int mechanicWhoCreated;
+
+         while(true){
+            System.out.print("\tEnter open date (YYYY-MM-DD): ");
+            openDate = in.readLine().trim();
+            if(openDate.isEmpty()) {
+               System.out.print("\tError: open date cannot be empty!");
+               continue;
+            }
+            //format check 
+            if(!openDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+               System.out.print("\tError: open date must be in the format YYYY-MM-DD!");
+               continue;
+            }
+            break;
+         } 
+           
+         while (true) { 
+            System.out.print("\tEnter odometer reading: ");
+            String odometerInput = in.readLine().trim();
+            if(odometerInput.isEmpty()) {
+               System.out.print("\tError: odometer reading cannot be empty!");
+               continue;
+            }
+            try {
+               odometerReading = Integer.parseInt(odometerInput);
+               if(odometerReading < 0) {
+               System.out.print("\tError: odometer reading cannot be negative!");
+               continue;
+            }
+         }catch (NumberFormatException e) {
+            System.out.print("\tError: odometer reading must only be numbers!");
+         }
+         break;
+      }
+
+     
+         System.out.print("\tEnter customer comments: "); 
+         custComments = in.readLine().trim();
+
+      
+         while(true){
+            System.out.print("\tEnter the employee ID of the mechanic creating this service request: ");
+            String mechIDInput = in.readLine().trim();
+            if(mechIDInput.isEmpty()) {
+               System.out.print("\tError: mechanic employee ID cannot be empty!");
+               continue;
+            }
+            if(mechIDInput.matches("\\d+")){
+               mechanicWhoCreated = Integer.parseInt(mechIDInput);
+
+               //we also need to make sure the mechanic actually exists
+               ResultSet MechResult = esql._connection.createStatement().executeQuery("SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + mechanicWhoCreated);
+               MechResult.next();
+
+               int mechCount = MechResult.getInt(1);
+               if(mechCount == 0){
+                   System.out.println("Mechanic does not exist. Add the mechanic first.");
+                   MechResult.close();
+                   break;
+               }
+               MechResult.close();
+               break;
+            }
+            else {
+               System.out.println("\tError: mechanic employee ID must only be numbers!");
+            }
+         }
+             
+         
+
+
+         String serviceQuery = "INSERT INTO ServiceRequest (requestID, openDate, closeDate, odometerReading, custComments, mechComments, finalBill, status, customerID, associatedCarVIN, mechanicWhoCreated, mechanicWhoClosed) VALUES (" +
+         requestID + ", '" +
+         openDate + "', NULL, " +
+         odometerReading + ", '" +
+         custComments + "', NULL, NULL, 'open', " +
+         selectedCustomer + ", '" +
+         SelectedVIN + "', " +
+         mechanicWhoCreated + ", NULL)";
+
+
+         
+         esql.executeUpdate(serviceQuery);
+        System.out.println("Service request created successfully with ID: " + requestID);
+      
+         }
+      } catch (Exception e) {
+         System.err.println (e.getMessage());
+      }
+
+        
     }
 
    public static void QueryExample(EmbeddedSQL esql){
