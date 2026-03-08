@@ -170,23 +170,17 @@ public class EmbeddedSQL{
             // These are sample SQL statements
             System.out.println("MAIN MENU");
             System.out.println("---------");
-            System.out.println("0. Find the pid of parts with cost lower than $_____ (example)");
-            System.out.println("1. Find the total number of parts supplied by each supplier");
-            System.out.println("2. Find the total number of parts supplied by each supplier who supplies at least 3 parts");
-            System.out.println("3. For every supplier that supplies only green parts, print the name of the supplier and the total number of parts that he supplies");
-            System.out.println("4. For every supplier that supplies green part and red part, print the name and the price of the most expensive part that he supplies"); 
-            System.out.println("5. Find the name of parts with cost lower than $_____");
-            System.out.println("6. Find the address of the suppliers who supply _____________ (pname)");
+            System.out.println("0. Add a new customer");
+            System.out.println("1. Add a mechanic");
+            System.out.println("2. Add a car");
+            System.out.println("3. Initiate a service request");
             System.out.println("9. < EXIT");
 
             switch (readChoice()){
-               case 0: QueryExample(esql); break;
-               case 1: Query1(esql); break;
-               case 2: Query2(esql); break;
-               case 3: Query3(esql); break;
-               case 4: Query4(esql); break;
-               case 5: Query5(esql); break;
-               case 6: Query6(esql); break;
+               case 0: AddCustomer(esql); break;
+               case 1: AddMechanic(esql); break;
+               case 2: AddCar(esql); break;
+               case 3: initiateServiceRequest(esql); break;
                case 9: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
@@ -582,24 +576,25 @@ public class EmbeddedSQL{
         }
     }
 
-
+    //initiateServiceRequest function 
     public static void initiateServiceRequest(EmbeddedSQL esql){
       try {
          String lastName;
          while (true) { 
-            System.out.print("\tEnter mechanic last name: ");
+            System.out.print("\tEnter customer's last name: ");
             lastName = in.readLine().trim();
             if(lastName.isEmpty()) {
-               System.out.print("\tError: employee last name cannot be empty!");
+               System.out.println("\tError: customer last name cannot be empty!");
                continue;
             }
             if(!lastName.matches("[a-zA-Z'-]+")){
-               System.out.print("\tError: employee last name must only be letters!");
+               System.out.println("\tError: customer last name must only be letters!");
+               continue;
             }
             break;
          }
-         //searching db of existing customers.
-         String searchQuery = "SELECT customerID, firstName, lastName FROM Customer WHERE lastName = '" + lastName + " '";
+         //searching db for existing customers.
+         String searchQuery = "SELECT customerID, firstName, lastName FROM Customer WHERE lastName = '" + lastName + "'";
          ResultSet searchResult = esql._connection.createStatement().executeQuery(searchQuery);
 
          //thought about using hashmap but its only better for looking up by ID. 
@@ -734,7 +729,14 @@ public class EmbeddedSQL{
          }
 
          //at this point we have the selected customer and the selected car, we can now create a service request for that car
-         int requestID = (int)(Math.random() * 100); //generate a random request ID.
+         int requestID = 0;
+         //to get the next logical requestID, we get the max requestID in the database and add 1 to it
+         //and if there's no request in the database, we start with 1 since requestID is a primary key and cannot be 0.
+         ResultSet maxIDResult = esql._connection.createStatement().executeQuery("SELECT COALESCE(MAX(requestID), 0) FROM ServiceRequest");
+         if (maxIDResult.next()) {
+            requestID = maxIDResult.getInt(1) + 1;
+         }
+         maxIDResult.close();
          String openDate;
          //String closeDate;
          int odometerReading;
@@ -798,12 +800,11 @@ public class EmbeddedSQL{
                MechResult.next();
 
                int mechCount = MechResult.getInt(1);
+               MechResult.close();
                if(mechCount == 0){
                    System.out.println("Mechanic does not exist. Add the mechanic first.");
-                   MechResult.close();
-                   break;
+                   continue;
                }
-               MechResult.close();
                break;
             }
             else {
