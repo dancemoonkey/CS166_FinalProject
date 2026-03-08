@@ -234,15 +234,17 @@ public class EmbeddedSQL{
       return input;
    }//end readChoice
 
+   //addcustomer function, which adds a new customer into the database.
    public static void AddCustomer(EmbeddedSQL esql){
       try{
+         //variables to store user input
          int customerID;
          String firstName;
          String lastName;
          String Phone;
          String Address;
 
-
+         //from here, do some error handling that checks if the input is correct.
          while (true) { 
             System.out.print("\tEnter customer ID: ");
             String customerInput = in.readLine().trim();
@@ -256,6 +258,19 @@ public class EmbeddedSQL{
                System.out.print("\tError: customer ID cannot be zero/negative!");
                continue;
             }
+
+            //check if the customerID already exists for extra safety
+            //run a query to count how many customers have the same customerID as the one the user just gave
+            String checkQuery = "SELECT COUNT(*) FROM Customer WHERE customerID = " + customerID;
+            ResultSet rs = esql._connection.createStatement().executeQuery(checkQuery);
+            rs.next();
+            int count = rs.getInt(1);
+            rs.close();
+            if(count > 0){
+                System.out.println("\tError: customer ID already exists! Please enter a different ID.");
+                continue;
+            }
+            //if we got here, it means the customerID is valid
             break;
 
          }catch (NumberFormatException e) {
@@ -273,6 +288,7 @@ public class EmbeddedSQL{
          }
          if(!firstName.matches("[a-zA-Z'-]+")){
             System.out.print("\tError: customer first name must only be letters!");
+            continue;
          }
          break;
       }
@@ -286,6 +302,7 @@ public class EmbeddedSQL{
          }
          if(!lastName.matches("[a-zA-Z'-]+")){
             System.out.print("\tError: customer last name must only be letters!");
+            continue;
          }
          break;
       }
@@ -299,6 +316,7 @@ public class EmbeddedSQL{
          //enforces a 10 digit number nothing > / <
          if(!Phone.matches("\\d{10}")){
             System.out.print("\tError: invalid Phone Number!");
+            continue;
          }
          break;
       }
@@ -323,11 +341,7 @@ public class EmbeddedSQL{
          query += "'" + firstName + "', ";
          query += "'" + lastName + "', ";
          query += "'" + Phone + "', ";
-         query += "'" + Address + "', ";
-
-      
-         //do some error handling that checks if the input is correct.
-
+         query += "'" + Address + "')";
 
       esql.executeUpdate(query);
 
