@@ -249,13 +249,13 @@ public class EmbeddedSQL{
             System.out.print("\tEnter customer ID: ");
             String customerInput = in.readLine().trim();
             if(customerInput.isEmpty()) {
-               System.out.print("\tError: customer ID cannot be empty!");
+               System.out.println("\tError: customer ID cannot be empty!");
                continue;
             }
             try {
                customerID = Integer.parseInt(customerInput);
                if(customerID <= 0) {
-               System.out.print("\tError: customer ID cannot be zero/negative!");
+               System.out.println("\tError: customer ID cannot be zero/negative!");
                continue;
             }
 
@@ -283,11 +283,11 @@ public class EmbeddedSQL{
          System.out.print("\tEnter customer first name: ");
          firstName = in.readLine().trim();
          if(firstName.isEmpty()) {
-            System.out.print("\tError: customer first name cannot be empty!");
+            System.out.println("\tError: customer first name cannot be empty!");
             continue;
          }
          if(!firstName.matches("[a-zA-Z'-]+")){
-            System.out.print("\tError: customer first name must only be letters!");
+            System.out.println("\tError: customer first name must only be letters!");
             continue;
          }
          break;
@@ -297,11 +297,11 @@ public class EmbeddedSQL{
          System.out.print("\tEnter customer last name: ");
          lastName = in.readLine().trim();
          if(lastName.isEmpty()) {
-            System.out.print("\tError: customer last name cannot be empty!");
+            System.out.println("\tError: customer last name cannot be empty!");
             continue;
          }
          if(!lastName.matches("[a-zA-Z'-]+")){
-            System.out.print("\tError: customer last name must only be letters!");
+            System.out.println("\tError: customer last name must only be letters!");
             continue;
          }
          break;
@@ -310,12 +310,12 @@ public class EmbeddedSQL{
          System.out.print("\tEnter customer's phone number: ");
          Phone = in.readLine().trim();
          if(Phone.isEmpty()) {
-            System.out.print("\tError: customer phone number cannot be empty!");
+            System.out.println("\tError: customer phone number cannot be empty!");
             continue;
          }
          //enforces a 10 digit number nothing > / <
          if(!Phone.matches("\\d{10}")){
-            System.out.print("\tError: invalid Phone Number!");
+            System.out.println("\tError: invalid Phone Number!");
             continue;
          }
          break;
@@ -325,12 +325,12 @@ public class EmbeddedSQL{
          System.out.print("\tEnter customer's address: ");
          Address = in.readLine().trim();
          if(Address.isEmpty()) {
-            System.out.print("\tError: customer address cannot be empty!");
+            System.out.println("\tError: customer address cannot be empty!");
             continue;
          }
          //ensures its has number and letter in address like 12 lake drive
          if (!Address.matches(".*\\d+.*") || !Address.matches(".*[a-zA-Z]+.*")) {
-            System.out.print("\tError: Address must contain both numbers and letters.");
+            System.out.println("\tError: Address must contain both numbers and letters.");
             continue;
         }
          break;
@@ -350,10 +350,11 @@ public class EmbeddedSQL{
       }
    }//end AddCustomer
 
-   //TODO make sure no duplicate employeeID
+   //addMechanic function, which adds a new mechanic into the database
    public static void addMechanic(EmbeddedSQL esql)
    {
       try {
+         //variables to store user input
          int employeeID;
          String firstName;
          String lastName;
@@ -365,21 +366,31 @@ public class EmbeddedSQL{
             //so we need to catch that cases since we cant have '-837211' as a valid employeeID
             String employeeInput = in.readLine().trim();
             if(employeeInput.isEmpty()) {
-               System.out.print("\tError: employee ID cannot be empty!");
+               System.out.println("\tError: employee ID cannot be empty!");
                continue;
             }
             try {
                employeeID = Integer.parseInt(employeeInput);
                if(employeeID <= 0) {
-               System.out.print("\tError: employee ID cannot be zero/negative!");
-               continue;
-            }
+                  System.out.println("\tError: employee ID cannot be zero/negative!");
+                  continue;
+               }
+
+                //extra safety check to see if employeeID already exists
+                String checkQuery = "SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + employeeID;
+                ResultSet rs = esql._connection.createStatement().executeQuery(checkQuery);
+                rs.next();
+                int count = rs.getInt(1);
+                rs.close();
+                if(count > 0){
+                    System.out.println("\tError: employee ID already exists! Please enter a different ID.");
+                    continue;
+                }
+
             break;
-               
-              // {Err: String::("employeeID cannot be empty");
 
          }catch (NumberFormatException e) {
-               System.out.print("\tError: employee ID must only be numbers!");
+               System.out.println("\tError: employee ID must only be numbers!");
          }
          
       }
@@ -388,11 +399,12 @@ public class EmbeddedSQL{
             System.out.print("\tEnter mechanic first name: ");
             firstName = in.readLine().trim();
             if(firstName.isEmpty()) {
-               System.out.print("\tError: employee first name cannot be empty!");
+               System.out.println("\tError: employee first name cannot be empty!");
                continue;
             }
             if(!firstName.matches("[a-zA-Z'-]+")){
-               System.out.print("\tError: employee first name must only be letters!");
+               System.out.println("\tError: employee first name must only be letters!");
+               continue;
             }
             break;
          }
@@ -401,11 +413,12 @@ public class EmbeddedSQL{
             System.out.print("\tEnter mechanic last name: ");
             lastName = in.readLine().trim();
             if(lastName.isEmpty()) {
-               System.out.print("\tError: employee last name cannot be empty!");
+               System.out.println("\tError: employee last name cannot be empty!");
                continue;
             }
-            if(!firstName.matches("[a-zA-Z'-]+")){
-               System.out.print("\tError: employee last name must only be letters!");
+            if(!lastName.matches("[a-zA-Z'-]+")){
+               System.out.println("\tError: employee last name must only be letters!");
+               continue;
             }
             break;
          }
@@ -414,19 +427,19 @@ public class EmbeddedSQL{
             System.out.print("\tEnter employee's years of Experience: ");
             String employeeYOE = in.readLine().trim();
             if(employeeYOE.isEmpty()) {
-               System.out.print("\tError: employee YOE cannot be empty!");
+               System.out.println("\tError: employee YOE cannot be empty!");
                continue;
             }
             try {
                yearsofExp = Integer.parseInt(employeeYOE);
                if(yearsofExp < 0) {
-               System.out.print("\tError: employee's YOE cannot be negative!");
+               System.out.println("\tError: employee's YOE cannot be negative!");
                continue;
             }
             break;
 
          }catch (NumberFormatException e) {
-               System.out.print("\tError: employee's YOE must only be numbers!");
+               System.out.println("\tError: employee's YOE must only be numbers!");
          }
       }
 
@@ -435,7 +448,7 @@ public class EmbeddedSQL{
          query += "'" + employeeID + "', ";
          query += "'" + firstName + "', ";
          query += "'" + lastName + "', ";
-         query += "'" + yearsofExp + "', ";
+         query += "'" + yearsofExp + "')";
          
 
          
@@ -474,10 +487,11 @@ public class EmbeddedSQL{
                 //so we also need to do a uniqueness check for the VIN
                 //we run a query to count how many cars have the same VIN
                 String vinCheck = "SELECT COUNT(*) FROM Car WHERE VIN = '" + vin + "'";
-                ResultSet queryResult = esql._connection.createStatement().executeQuery(vinCheck);
-                queryResult.next();
+                ResultSet vinQueryResult = esql._connection.createStatement().executeQuery(vinCheck);
+                vinQueryResult.next();
                 //if the count is greater than 0, it means a car with the same VIN already exists
-                int count = queryResult.getInt(1);
+                int count = vinQueryResult.getInt(1);
+                vinQueryResult.close();
                 if(count > 0){
                     System.out.println("A car with this VIN already exists.");
                     continue;
@@ -542,6 +556,7 @@ public class EmbeddedSQL{
                     //if the count is 0, it means there is no customer with that customerID
                     //which means the ownerID is invalid
                     int ownerCount = queryResult.getInt(1);
+                    queryResult.close();
                     if(ownerCount == 0){
                         System.out.println("Customer does not exist. Add the customer first.");
                         continue;
