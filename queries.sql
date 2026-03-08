@@ -1,6 +1,5 @@
 --query1--
 --List date, comment, and bill for all closed requests with bill lower than 100
---List the customers that have paid less than 100 dollars for repairs based on their previous service requests.
 SELECT closeDate, mechComments, finalBill
 FROM ServiceRequest
 WHERE finalBill < 100 AND status = 'closed';
