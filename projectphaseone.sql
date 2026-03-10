@@ -1,3 +1,11 @@
+--drop indexes as a safety measure
+DROP INDEX IF EXISTS customer_ln_index;
+DROP INDEX IF EXISTS car_ownerID_index;
+DROP INDEX IF EXISTS car_year_index;
+DROP INDEX IF EXISTS car_servicerequest_index;
+DROP INDEX IF EXISTS cust_servicerequest_index;
+DROP INDEX IF EXISTS servicerequest_status_index;
+
 --drop tables as a safety measure
 DROP TABLE IF EXISTS ServiceRequest;
 DROP TABLE IF EXISTS Car;
@@ -75,10 +83,16 @@ CREATE TABLE ServiceRequest (
     FOREIGN KEY (mechanicWhoClosed) REFERENCES Mechanic(employeeID)
 );
 
+--create indexes to improve query performance
+CREATE INDEX customer_ln_index ON Customer(lastName);
+CREATE INDEX car_ownerID_index ON Car(ownerID);
+CREATE INDEX car_year_index ON Car(Year);
+CREATE INDEX car_servicerequest_index ON ServiceRequest(associatedCarVIN);
+CREATE INDEX cust_servicerequest_index ON ServiceRequest(customerID);
+CREATE INDEX servicerequest_status_index ON ServiceRequest(status);
 
 -- Load data
 \copy Customer FROM 'Customer.csv' WITH (FORMAT text, DELIMITER ',');
 \copy Car FROM 'Car.csv' WITH (FORMAT text, DELIMITER ',');
 \copy Mechanic FROM 'Mechanic.csv' WITH (FORMAT text, DELIMITER ',');
 \copy ServiceRequest FROM 'ServiceRequest.csv' WITH (FORMAT text, DELIMITER ',')
-
