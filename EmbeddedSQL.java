@@ -345,7 +345,7 @@ public class EmbeddedSQL{
    }//end AddCustomer
 
    //addMechanic function, which adds a new mechanic into the database
-   public static void addMechanic(EmbeddedSQL esql)
+   public static void AddMechanic(EmbeddedSQL esql)
    {
       try {
          //variables to store user input
@@ -794,28 +794,24 @@ public class EmbeddedSQL{
             }
             if(mechIDInput.matches("\\d+")){
                mechanicWhoCreated = Integer.parseInt(mechIDInput);
-
-               //we also need to make sure the mechanic actually exists
-               ResultSet MechResult = esql._connection.createStatement().executeQuery("SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + mechanicWhoCreated);
-               MechResult.next();
-
-               int mechCount = MechResult.getInt(1);
-               MechResult.close();
-               if(mechCount == 0){
-                   System.out.println("Mechanic does not exist. Add the mechanic first.");
-                   continue;
-               }
-               break;
             }
             else {
-               System.out.println("\tError: mechanic employee ID must only be numbers!");
+                  System.out.println("\tError: mechanic employee ID must only be numbers!");
             }
-         }
-             
+               //we also need to make sure the mechanic actually exists
+               ResultSet MechResult = esql._connection.createStatement().executeQuery("SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + mechanicWhoCreated);
+               if(!MechResult.next()){
+                  System.out.println("Mechanic does not exist.");
+                  MechResult.close();
+                  continue;
+               }
+               MechResult.close();
+               break;
+                  
          
 
 
-         String serviceQuery = "INSERT INTO ServiceRequest (requestID, openDate, closeDate, odometerReading, custComments, mechComments, finalBill, status, customerID, associatedCarVIN, mechanicWhoCreated, mechanicWhoClosed) VALUES (" +
+         String OpenQuery = "INSERT INTO ServiceRequest (requestID, openDate, closeDate, odometerReading, custComments, mechComments, finalBill, status, customerID, associatedCarVIN, mechanicWhoCreated, mechanicWhoClosed) VALUES (" +
          requestID + ", '" +
          openDate + "', NULL, " +
          odometerReading + ", '" +
@@ -825,17 +821,140 @@ public class EmbeddedSQL{
          mechanicWhoCreated + ", NULL)";
 
 
-         
-         esql.executeUpdate(serviceQuery);
-        System.out.println("Service request created successfully with ID: " + requestID);
       
-         }
-      } catch (Exception e) {
+      esql.executeUpdate(OpenQuery);
+      System.out.println("Service request created successfully with ID: " + requestID);
+         
+      
+            }
+       catch (Exception e) {
          System.err.println (e.getMessage());
       }
 
-        
-    }
+   
+   }
+
+
+    //closeServiceRequest function 
+    public static void closeServiceRequest(EmbeddedSQL esql){
+      try {
+         int requestID;
+         String openDate;
+
+         while(true)
+            {
+               System.out.print("\tEnter service request ID to close: ");
+               String requestIDInput = in.readLine().trim();
+               if(requestIDInput.isEmpty()) {
+                  System.out.print("\tError: service request ID cannot be empty!");
+                  continue;
+               }
+               if(!requestIDInput.matches("\\d+")){
+                  System.out.println("\tError: service request ID must only be numbers!");
+                  continue;
+               }
+               requestID = Integer.parseInt(requestIDInput);
+
+               //we also need to make sure the service request actually exists and is currently open
+               ResultSet requestResult = esql._connection.createStatement().executeQuery("SELECT requestID, status, opendate FROM ServiceRequest WHERE requestID = " + requestID + " AND status = 'open'");
+               if(!requestResult.next()){
+                  System.out.println("Service request does not exist or is not currently open.");
+                  requestResult.close();
+                  continue;
+               }
+
+               openDate = requestResult.getString("openDate");
+               requestResult.close();
+               break;
+         
+            }
+
+            int mechanicWhoClosed;
+            while(true){
+               System.out.print("\tEnter the employee ID of the mechanic closing this service request: ");
+               String requestIDInput = in.readLine().trim();
+               if(requestIDInput.isEmpty()) {
+                  System.out.print("\tError: mechanic ID cannot be empty!");
+                  continue;
+               }
+               if(!requestIDInput.matches("\\d+")){
+                  System.out.println("\tError: employee ID must only be numbers!");
+                  continue;
+               }
+               mechanicWhoClosed = Integer.parseInt(requestIDInput);
+
+               ResultSet MechResult = esql._connection.createStatement().executeQuery("SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + mechanicWhoClosed);
+               if(!MechResult.next()){
+                  System.out.println("Mechanic does not exist.");
+                  MechResult.close();
+                  continue;
+               }
+               MechResult.close();
+               break;
+
+            }
+               //get & validate close date
+               String closeDate;
+               while(true){
+                  System.out.print("\tEnter close date (YYYY-MM-DD): ");
+                  openDate = in.readLine().trim();
+                  if(openDate.isEmpty()) {
+                     System.out.print("\tError: close date cannot be empty!");
+                     continue;
+                  }
+                  //format check 
+                  if(!openDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                     System.out.print("\tError: close date must be in the format YYYY-MM-DD!");
+                     continue;
+                  }
+                  break;
+               } 
+
+
+
+
+               //final bill check
+
+               double finalBill;
+
+               while(true){
+                  System.out.print("\tEnter final bill amount: $");
+                  String billInput = in.readLine().trim();
+                  if(billInput.isEmpty()) {
+                     System.out.print("\tError: final bill cannot be empty!");
+                     continue;
+                  }
+                  try {
+                     finalBill = Double.parseDouble(billInput);
+                     if(finalBill < 0) {
+                        System.out.print("\tError: final bill cannot be negative!");
+                        continue;
+                     }
+                     break;
+                  }catch (NumberFormatException e) {
+                     System.out.print("\tError: final bill must only be numbers!");
+                  }
+               }
+
+               //mech comments check
+               System.out.print("\tEnter mechanic comments: ");
+               String mechComments = in.readLine().trim();
+
+               //lastly update service request to closed
+
+
+      String closeQuery = "UPDATE ServiceRequest SET closeDate = '" + closeDate + "', mechComments = '" + mechComments + "', finalBill = " + finalBill + ", status = 'close', mechanicWhoClosed = " + mechanicWhoClosed + " WHERE requestID = " + requestID;
+      
+            
+      esql.executeUpdate(closeQuery);
+      System.out.println("Service request closed successfully with ID: " + requestID);
+         
+
+         
+         }catch (Exception e) {
+            System.err.println ("\t Failed to close service Request");
+         }
+      }
 
    public static void QueryExample(EmbeddedSQL esql){
       try{
@@ -853,11 +972,11 @@ public class EmbeddedSQL{
    
    public static void Query1(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sid, S.sname, COUNT(C.pid) AS totalParts " +
-               "FROM Suppliers S, Catalog C " +
-               "WHERE S.sid = C.sid " +
-               "GROUP BY S.sid, S.sname " +
-               "ORDER BY S.sid;";
+         String query = "SELECT closeDate, mechComments, finalBill" +
+         "FROM ServiceRequest" +
+         "WHERE finalBill < 100" +
+         "AND status = 'closed'";
+         ;
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
       }catch(Exception e){
@@ -867,12 +986,11 @@ public class EmbeddedSQL{
 
    public static void Query2(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sid, S.sname, COUNT(C.pid) AS totalParts " +
-            "FROM suppliers S, catalog C " +
-            "WHERE S.sid = C.sid " +
-            "GROUP BY S.sid, S.sname " +
-            "HAVING COUNT(C.pid) >= 3 " +
-            "ORDER BY S.sid;";
+         String query = "SELECT C.firstName, C.lastName" + 
+                        "FROM Customer C, Car CS" + 
+                        "WHERE C.customerID = CS.ownerID" + 
+                        "GROUP BY C.customerID, C.firstName, C.lastName" + 
+                        "HAVING COUNT(CS.VIN) > 20";
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -883,17 +1001,11 @@ public class EmbeddedSQL{
 
    public static void Query3(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS totalParts " +
-            "FROM Suppliers S, Catalog C, Parts P " +
-            "WHERE S.sid = C.sid " +
-            "AND C.pid = P.pid " +
-            "AND NOT EXISTS ( " +
-               "SELECT * " +
-               "FROM Catalog C2, Parts P2 " +
-               "WHERE C2.sid = S.sid " +
-               "AND C2.pid = P2.pid " +
-               "AND P2.color <> 'Green' )" +
-               "GROUP BY S.sid, S.sname; ";
+         String query = "SELECT DISTINCT CS.Make, CS.Model, CS.Year" + 
+                        "FROM Car CS, ServiceRequest S" + 
+                        "WHERE S.associatedCarVIN = CS.VIN " + 
+                        "AND Year < 1995" + 
+                        "AND odometerReading < 50000;";
          
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -904,27 +1016,34 @@ public class EmbeddedSQL{
 
    public static void Query4(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, MAX(C.cost) AS priceOfMostExpensivePart " +
-         "FROM Suppliers S, Catalog C " +
-         "WHERE S.sid = C.sid " +
-         "AND EXISTS ( " +
-         "   SELECT * " +
-         "   FROM Catalog C1, Parts P1 " +
-         "   WHERE C1.sid = S.sid " +
-         "   AND C1.pid = P1.pid " +
-         "   AND P1.color = 'Green' " +
-         ") " +
 
-         "AND EXISTS ( " +
-         "   SELECT * " +
-         "   FROM Catalog C2, Parts P2 " +
-         "   WHERE C2.sid = S.sid " +
-         "   AND C2.pid = P2.pid " +
-         "   AND P2.color = 'Red' " +
-         ") " +
+         int input;
 
-         "GROUP BY S.sid, S.sname " +
-         "ORDER BY S.sname;";
+         while (true) { 
+            System.out.print("\tEnter number of car results you would like to see: ");
+            String customerInput = in.readLine().trim();
+            if(customerInput.isEmpty()) {
+               System.out.println("\tError: value cannot be empty!");
+               continue;
+            }
+            try {
+               input = Integer.parseInt(customerInput);
+               if(input <= 0) {
+               System.out.println("\tError: valuye cannot be zero/negative!");
+               continue;
+            }
+         }catch (NumberFormatException e) {
+               System.out.println("\tError: value must only be numbers!");
+         }
+      
+
+      String query = "SELECT CS.Make, CS.Model, COUNT(S.requestID) AS num_requests" + 
+                        "FROM Car CS, ServiceRequest S" + 
+                        "WHERE CS.VIN = S.associatedCarVIN" + 
+                        "AND S.status = 'open'" + 
+                        "GROUP BY CS.VIN, CS.Make, CS.Model" + 
+                        "ORDER BY num_requests DESC" + 
+                        "limit " + input + " ";
 
 
          int rowCount = esql.executeQuery(query);
@@ -933,22 +1052,19 @@ public class EmbeddedSQL{
          System.err.println (e.getMessage());
       }
    }//end Query4
+}
+
 
    public static void Query5(EmbeddedSQL esql){
-      
       try{
-         System.out.print("\tEnter cost: $");
-         String input = in.readLine();
-
-         String query = "SELECT DISTINCT p.pname " +
-         "FROM suppliers S, catalog C, parts P " +
-         "WHERE S.sid = C.sid " +
-         "AND C.pid = P.pid " + 
-         "AND C.cost < " + input + " " + 
-        "ORDER BY p.pname ";
+         String query = "SELECT C.firstName, C.lastName, SUM(S.finalBill) AS total_bill" + 
+                        "FROM Customer C, ServiceRequest S" + 
+                        "WHERE C.customerID = S.customerID" +
+                        "AND S.status = 'closed'" + 
+                        "GROUP BY C.customerID, C.firstName, C.lastName" + 
+                        "ORDER BY total_bill DESC; ";
 
          
-         //query += input;
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -956,26 +1072,3 @@ public class EmbeddedSQL{
          System.err.println (e.getMessage());
       }
    }//end Query5
-
-   public static void Query6(EmbeddedSQL esql){
-      try{
-          System.out.print("\tEnter part name: $");
-         String input = in.readLine();
-
-         String query = "SELECT DISTINCT S.address " +
-         "FROM suppliers S, catalog C, parts P " +
-         "WHERE P.pid = C.pid " +
-         "AND S.sid = C.sid "  + 
-         "AND P.pname = '" + input + "' " +
-        "ORDER BY S.address; ";
-
-        // query += input;
-
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
-      }catch(Exception e){
-         System.err.println (e.getMessage());
-      }
-   }//end Query6
-
-}//end EmbeddedSQL
