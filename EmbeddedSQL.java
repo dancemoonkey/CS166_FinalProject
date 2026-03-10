@@ -964,9 +964,7 @@ public class EmbeddedSQL {
 					continue;
 				}
 			}
-
-
-
+            
 
 			//final bill check
 
@@ -1010,20 +1008,6 @@ public class EmbeddedSQL {
 			System.err.println ("\t Failed to close service request");
 		}
 	}
-
-	public static void QueryExample(EmbeddedSQL esql) {
-		try {
-			String query = "SELECT * FROM Catalog WHERE cost < ";
-			System.out.print("\tEnter cost: $");
-			String input = in.readLine();
-			query += input;
-
-			int rowCount = esql.executeQuery(query);
-			System.out.println ("total row(s): " + rowCount);
-		} catch(Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}//end QueryExample
 
 	public static void Query1(EmbeddedSQL esql) {
 		try {
