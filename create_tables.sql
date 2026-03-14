@@ -94,7 +94,7 @@ CREATE INDEX cust_servicerequest_index ON ServiceRequest(customerID);
 CREATE INDEX servicerequest_status_index ON ServiceRequest(status);
 
 --load data from csv files
-\copy Customer FROM 'Customer.csv' WITH (FORMAT text, DELIMITER ',');
-\copy Car FROM 'Car.csv' WITH (FORMAT text, DELIMITER ',');
-\copy Mechanic FROM 'Mechanic.csv' WITH (FORMAT text, DELIMITER ',');
-\copy ServiceRequest FROM 'ServiceRequest.csv' WITH (FORMAT text, DELIMITER ',')
+\copy Customer FROM 'Customer.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true);
+\copy Car FROM 'Car.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true);
+\copy Mechanic FROM 'Mechanic.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true);
+\copy ServiceRequest FROM 'ServiceRequest.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true)

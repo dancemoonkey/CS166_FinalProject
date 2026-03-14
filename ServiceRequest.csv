@@ -6,3 +6,6 @@ requestID,openDate,closeDate,odometerReading,custComments,mechComments,finalBill
 1005,2024-03-01,2024-03-05,200000,Car wont start,Battery and alternator both failed replaced both,480.00,closed,4,5FNRL5H63KB128901,101,101
 1006,2024-03-12,,33000,AC not cooling,,,open,5,6LNLM5U97LUL12345,102,
 1007,2024-04-02,2024-04-04,95000,Transmission slipping,Flushed and refilled transmission fluid,150.00,closed,3,7FMCU9J94KUB12345,103,103
+1008,2024-04-10,,30000,Strange noise from engine,,,open,1,1HGCM82633A000001,101,
+1009,2024-04-15,2024-04-17,45000,Oil change needed,Changed oil and filter,75.00,closed,1,1HGCM82633A000002,102,102
+1010,2024-05-01,,25000,Brake pads worn,,,open,1,1HGCM82633A000017,103,

@@ -13,16 +13,16 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 
 //we used the Lab 7 JDBC code as a starting point
 //and built upon it to create our Mechanic Shop Simulator application
-public class EmbeddedSQL {
+public class MechanicShopSim {
 
 	//reference to physical database connection.
 	private Connection _connection = null;
@@ -41,7 +41,7 @@ public class EmbeddedSQL {
 	* @param password the user login password
 	* @throws java.sql.SQLException when failed to make a connection.
 	*/
-	public EmbeddedSQL (String dbname, String dbport, String user, String passwd) throws SQLException {
+	public MechanicShopSim (String dbname, String dbport, String user, String passwd) throws SQLException {
 
 		System.out.print("Connecting to database...");
 		try {
@@ -146,13 +146,13 @@ public class EmbeddedSQL {
 			System.err.println (
 			    "Usage: " +
 			    "java [-classpath <classpath>] " +
-			    EmbeddedSQL.class.getName () +
+			    MechanicShopSim.class.getName () +
 			    " <dbname> <port> <user>");
 			return;
 		}
 
 		Greeting();
-		EmbeddedSQL esql = null;
+		MechanicShopSim esql = null;
 		try {
 			//use postgres JDBC driver.
 			Class.forName ("org.postgresql.Driver").newInstance ();
@@ -161,7 +161,7 @@ public class EmbeddedSQL {
 			String dbname = args[0];
 			String dbport = args[1];
 			String user = args[2];
-			esql = new EmbeddedSQL (dbname, dbport, user, "");
+			esql = new MechanicShopSim (dbname, dbport, user, "");
             //boolean variable to control the main menu loop
 			boolean keepon = true;
 			while(keepon) {
@@ -269,7 +269,7 @@ public class EmbeddedSQL {
 	}
 
 	//AddCustomer function, which adds a new customer into the database.
-	public static void AddCustomer(EmbeddedSQL esql) {
+	public static void AddCustomer(MechanicShopSim esql) {
 		try {
 			//variables to store user input
 			int customerID;
@@ -386,15 +386,16 @@ public class EmbeddedSQL {
 			query += "'" + Address + "')";
 
 			esql.executeUpdate(query);
+			System.out.println("Customer added successfully!");
 
 		} 
         catch(Exception e) {
-			System.err.println (e.getMessage());
+			System.err.println ("FAILED to add Customer: " +e.getMessage());
 		}
 	}
 
 	//AddMechanic function, which adds a new mechanic into the database
-	public static void AddMechanic(EmbeddedSQL esql)
+	public static void AddMechanic(MechanicShopSim esql)
 	{
 		try {
 			//variables to store user input
@@ -496,15 +497,16 @@ public class EmbeddedSQL {
 			               + yearsofExp + ")";
 
 			esql.executeUpdate(query);
+			System.out.println("Mechanic added successfully!");
 
 		}
 		catch(Exception e) {
-			System.err.println (e.getMessage());
+			System.err.println ("FAILED to add Mechanic: " +e.getMessage());
 		}
 	}
 
 	//AddCar function, which adds a new car into the database.
-	public static void AddCar(EmbeddedSQL esql) {
+	public static void AddCar(MechanicShopSim esql) {
 		try {
 			//set up variables for user input
 			String vin;
@@ -635,7 +637,7 @@ public class EmbeddedSQL {
 	}
 
 	//initiateServiceRequest function
-	public static void initiateServiceRequest(EmbeddedSQL esql) {
+	public static void initiateServiceRequest(MechanicShopSim esql) {
 		try {
 			//declare all variables at the top so they are visible in the whole method
 			int requestID = 0;
@@ -669,6 +671,7 @@ public class EmbeddedSQL {
 			List<Integer> customerIDS = new ArrayList<>();
 			List<String> customersNames = new ArrayList<>();
 
+			//if multiple customers have the same last name, we will store all their customerIDs and first names in these lists 
 			while(searchResult.next())
 			{
 				customerIDS.add(searchResult.getInt("customerID"));
@@ -694,8 +697,9 @@ public class EmbeddedSQL {
 					}
 					System.out.println("Invalid choice. Please enter 1 or 2.");
 				}
-
+				
 				if (choice == 1) {
+					//calling addCustomer and get new customerID
 					AddCustomer(esql);
 					ResultSet newResult = esql._connection.createStatement().executeQuery("SELECT MAX(customerID) FROM Customer");
 					if (newResult.next()) {
@@ -703,10 +707,12 @@ public class EmbeddedSQL {
 					}
 					newResult.close();
 				} else {
+					//if user doesn't want to add a new customer, cancel service request
 					System.out.println("Service request cancelled. Goodbye.");
 					return;
 				}
 			}
+			//auto select customer if result is only 1
 			else if(customerIDS.size() == 1)
 			{
 				selectedCustomer = customerIDS.get(0);
@@ -761,6 +767,8 @@ public class EmbeddedSQL {
 				}
 				newCarResult.close();
 			}
+			//if there are cars, list them and ask user to select which car they want to initiate the service request for
+			//or if they want to add a new car
 			else {
 				System.out.println("Customers cars:");
 				for (int i = 0; i < CarVINS.size(); i++) {
@@ -801,6 +809,7 @@ public class EmbeddedSQL {
 			}
 			maxIDResult.close();
 
+			//simple validation using try catch block for open date to make sure it's in the correct format
 			while(true) {
 				System.out.print("\tEnter open date (YYYY-MM-DD): ");
 				openDate = in.readLine().trim();
@@ -818,6 +827,7 @@ public class EmbeddedSQL {
 				}
 			}
 
+			//validate odometer reading input to make sure it's a non-negative integer
 			while (true) {
 				System.out.print("\tEnter odometer reading: ");
 				String odometerInput = in.readLine().trim();
@@ -840,6 +850,7 @@ public class EmbeddedSQL {
 			System.out.print("\tEnter customer comments: ");
 			custComments = in.readLine().trim();
 
+			//validate mechanicWhoCreated input to make sure it's a valid employeeID of an existing mechanic in the DB
 			while(true) {
 				System.out.print("\tEnter the employee ID of the mechanic creating this service request: ");
 				String mechIDInput = in.readLine().trim();
@@ -864,7 +875,7 @@ public class EmbeddedSQL {
 				MechResult.close();
 				break;
 			}
-
+			//sql query to insert the new service request into the database
 			String OpenQuery = "INSERT INTO ServiceRequest (requestID, openDate, closeDate, odometerReading, custComments, mechComments, finalBill, status, customerID, associatedCarVIN, mechanicWhoCreated, mechanicWhoClosed) VALUES (" +
 			                   requestID + ", '" +
 			                   openDate + "', NULL, " +
@@ -879,17 +890,18 @@ public class EmbeddedSQL {
 
 		}
 		catch (Exception e) {
-			System.err.println (e.getMessage());
+			System.err.println ("FAILED to create service request: " +e.getMessage());
 		}
 	}
 
 
 	//closeServiceRequest function
-	public static void closeServiceRequest(EmbeddedSQL esql) {
+	public static void closeServiceRequest(MechanicShopSim esql) {
 		try {
 			int requestID;
 			String openDate;
 
+			//getting service request ID and validating it to make sure it's numbers only and not empty
 			while(true)
 			{
 				System.out.print("\tEnter service request ID to close: ");
@@ -911,7 +923,7 @@ public class EmbeddedSQL {
 					requestResult.close();
 					continue;
 				}
-
+				//in this case, service request exists and is open, we can proceed with closing it
 				openDate = requestResult.getString("openDate");
 				requestResult.close();
 				break;
@@ -919,11 +931,12 @@ public class EmbeddedSQL {
 			}
 
 			int mechanicWhoClosed;
+			//validating employeeID
 			while(true) {
 				System.out.print("\tEnter the employee ID of the mechanic closing this service request: ");
 				String requestIDInput = in.readLine().trim();
 				if(requestIDInput.isEmpty()) {
-					System.out.println("\tError: mechanic ID cannot be empty!");
+					System.out.println("\tError: employee ID cannot be empty!");
 					continue;
 				}
 				if(!requestIDInput.matches("\\d+")) {
@@ -932,6 +945,7 @@ public class EmbeddedSQL {
 				}
 				mechanicWhoClosed = Integer.parseInt(requestIDInput);
 
+				//we also need to make sure the mechanic actually exists
 				ResultSet MechResult = esql._connection.createStatement().executeQuery("SELECT COUNT(*) FROM Mechanic WHERE employeeID = " + mechanicWhoClosed);
 				MechResult.next();
 				if(MechResult.getInt(1) == 0) {
@@ -953,7 +967,8 @@ public class EmbeddedSQL {
 					System.out.println("\tError: close date cannot be empty!");
 					continue;
 				}
-
+				//also need to check that the close date is not before the open date. 
+				//we did this by parsing the dates and comparing them
 				try {
 					LocalDate date = LocalDate.parse(closeDate, DateTimeFormatter.ISO_LOCAL_DATE);
 					LocalDate open = LocalDate.parse(openDate, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -964,6 +979,7 @@ public class EmbeddedSQL {
 					closeDate = date.toString();
 					break;
 				}
+				//format validation for the date input
 				catch(DateTimeParseException e) {
 					System.out.println("\tError: close date must be in the format YYYY-MM-DD!");
 					continue;
@@ -974,7 +990,7 @@ public class EmbeddedSQL {
 			//final bill check
 
 			double finalBill;
-
+			//we validate that the final bill is a number, not empty, and not negative. 
 			while(true) {
 				System.out.print("\tEnter final bill amount: $");
 				String billInput = in.readLine().trim();
@@ -1016,7 +1032,7 @@ public class EmbeddedSQL {
 
     //done with functions! next up, the queries
     //query 1: list the date, comment, and bill for all closed requests with bill lower than 100
-	public static void Query1(EmbeddedSQL esql) {
+	public static void Query1(MechanicShopSim esql) {
         //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT closeDate, mechComments, finalBill " +
@@ -1032,7 +1048,7 @@ public class EmbeddedSQL {
 	}
 
     //query 2: list the first and last name of customers having more than 20 different cars
-	public static void Query2(EmbeddedSQL esql) {
+	public static void Query2(MechanicShopSim esql) {
         //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT C.firstName, C.lastName " +
@@ -1050,7 +1066,7 @@ public class EmbeddedSQL {
 	}
 
     //query 3: list the make, model, and year of all cars built before 1995 having less than 50000 miles
-	public static void Query3(EmbeddedSQL esql) {
+	public static void Query3(MechanicShopSim esql) {
         //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT DISTINCT CS.Make, CS.Model, CS.Year " +
@@ -1068,7 +1084,7 @@ public class EmbeddedSQL {
 	}
 
     //query 4: list the make, model and number of service requests for the first k cars with the highest number of service orders.
-	public static void Query4(EmbeddedSQL esql) {
+	public static void Query4(MechanicShopSim esql) {
         //create the SQL query as a string, execute it, and print the number of rows returned
         //though this time, we also need to get user input for how many results
         //they want to see. so we need to validate that input before we run the query
@@ -1114,7 +1130,7 @@ public class EmbeddedSQL {
 	}
 
     //finally, query 5: list the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic.
-	public static void Query5(EmbeddedSQL esql) {
+	public static void Query5(MechanicShopSim esql) {
         //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT C.firstName, C.lastName, SUM(S.finalBill) AS total_bill " +
