@@ -1,16 +1,10 @@
 /*
- * Template JAVA User Interface
- * =============================
- *
- * Database Management Systems
- * Department of Computer Science &amp; Engineering
- * University of California - Riverside
- *
- * Target DBMS: 'Postgres'
- *
- */
+Edward Liu and William Chen
+CS166 Final Project: Mechanic Shop Simulator
+*/
 
 
+//import necessary libraries
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -26,91 +20,90 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.Year;
 
-/**
- * This class defines a simple embedded SQL utility class that is designed to
- * work with PostgreSQL JDBC drivers.
- *
- */
+//we used the Lab 7 JDBC code as a starting point
+//and built upon it to create our Mechanic Shop Simulator application
 public class EmbeddedSQL {
 
-	// reference to physical database connection.
+	//reference to physical database connection.
 	private Connection _connection = null;
 
-	// handling the keyboard inputs through a BufferedReader
-	// This variable can be global for convenience.
+	//handling the keyboard inputs through a BufferedReader
+	//this variable can be global for convenience.
 	static BufferedReader in = new BufferedReader(
 	    new InputStreamReader(System.in));
 
 	/**
-	 * Creates a new instance of EmbeddedSQL
-	 *
-	 * @param hostname the MySQL or PostgreSQL server hostname
-	 * @param database the name of the database
-	 * @param username the user name used to login to the database
-	 * @param password the user login password
-	 * @throws java.sql.SQLException when failed to make a connection.
-	 */
+	* Creates a new instance of EmbeddedSQL
+	*
+	* @param hostname the MySQL or PostgreSQL server hostname
+	* @param database the name of the database
+	* @param username the user name used to login to the database
+	* @param password the user login password
+	* @throws java.sql.SQLException when failed to make a connection.
+	*/
 	public EmbeddedSQL (String dbname, String dbport, String user, String passwd) throws SQLException {
 
 		System.out.print("Connecting to database...");
 		try {
-			// constructs the connection URL
+			//construct the connection URL
 			String url = "jdbc:postgresql://localhost:" + dbport + "/" + dbname;
 			System.out.println ("Connection URL: " + url + "\n");
 
-			// obtain a physical connection
+			//obtain a physical connection
 			this._connection = DriverManager.getConnection(url, user, passwd);
 			System.out.println("Done");
-		} catch (Exception e) {
+		} 
+        //catch exceptions, print out the error message, and exit
+        catch (Exception e) {
 			System.err.println("Error - Unable to Connect to Database: " + e.getMessage() );
 			System.out.println("Make sure you started postgres on this machine");
 			System.exit(-1);
-		}//end catch
-	}//end EmbeddedSQL
+		}
+	}
 
 	/**
-	 * Method to execute an update SQL statement.  Update SQL instructions
-	 * includes CREATE, INSERT, UPDATE, DELETE, and DROP.
-	 *
-	 * @param sql the input SQL string
-	 * @throws java.sql.SQLException when update failed
-	 */
+    * Method to execute an update SQL statement. Update SQL instructions
+    * includes CREATE, INSERT, UPDATE, DELETE, and DROP.
+    *
+    * @param sql the input SQL string
+    * @throws java.sql.SQLException when update failed
+    */
 	public void executeUpdate (String sql) throws SQLException {
-		// creates a statement object
+		//creates a statement object
 		Statement stmt = this._connection.createStatement ();
 
-		// issues the update instruction
+		//issues the update instruction
 		stmt.executeUpdate (sql);
 
-		// close the instruction
+		//close the instruction
 		stmt.close ();
-	}//end executeUpdate
+	}
 
 	/**
-	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
-	 * method issues the query to the DBMS and outputs the results to
-	 * standard out.
-	 *
-	 * @param query the input query string
-	 * @return the number of rows returned
-	 * @throws java.sql.SQLException when failed to execute the query
-	 */
+	* Method to execute an input query SQL instruction (i.e. SELECT).  This
+	* method issues the query to the DBMS and outputs the results to
+	* standard out.
+	*
+	* @param query the input query string
+	* @return the number of rows returned
+	* @throws java.sql.SQLException when failed to execute the query
+	*/
 	public int executeQuery (String query) throws SQLException {
-		// creates a statement object
+		//creates a statement object
 		Statement stmt = this._connection.createStatement ();
 
-		// issues the query instruction
+		//issues the query instruction
 		ResultSet rs = stmt.executeQuery (query);
 
 		/*
-		 ** obtains the metadata object for the returned result set.  The metadata
-		 ** contains row and column info.
-		 */
+		** obtains the metadata object for the returned result set.  The metadata
+		** contains row and column info.
+		*/
 		ResultSetMetaData rsmd = rs.getMetaData ();
 		int numCol = rsmd.getColumnCount ();
 		int rowCount = 0;
 
-		// iterates through the result set and output them to standard out.
+		//iterates through the result set and output them to standard out.
 		boolean outputHeader = true;
 		while (rs.next()) {
 			if(outputHeader) {
@@ -124,29 +117,30 @@ public class EmbeddedSQL {
 				System.out.print (rs.getString (i) + "\t");
 			System.out.println ();
 			++rowCount;
-		}//end while
+		}
 		stmt.close ();
 		return rowCount;
-	}//end executeQuery
+	}
 
 	/**
-	 * Method to close the physical connection if it is open.
-	 */
+	* Method to close the physical connection if it is open.
+	*/
 	public void cleanup() {
 		try {
 			if (this._connection != null) {
 				this._connection.close ();
-			}//end if
-		} catch (SQLException e) {
-			// ignored.
-		}//end try
-	}//end cleanup
+			}
+		} 
+        catch (SQLException e) {
+			//ignored.
+		}
+	}
 
 	/**
-	 * The main execution method
-	 *
-	 * @param args the command line arguments this inclues the <mysql|pgsql> <login file>
-	 */
+	* The main execution method
+	*
+	* @param args the command line arguments this inclues the <mysql|pgsql> <login file>
+	*/
 	public static void main (String[] args) {
 		if (args.length != 3) {
 			System.err.println (
@@ -155,23 +149,23 @@ public class EmbeddedSQL {
 			    EmbeddedSQL.class.getName () +
 			    " <dbname> <port> <user>");
 			return;
-		}//end if
+		}
 
 		Greeting();
 		EmbeddedSQL esql = null;
 		try {
-			// use postgres JDBC driver.
+			//use postgres JDBC driver.
 			Class.forName ("org.postgresql.Driver").newInstance ();
-			// instantiate the EmbeddedSQL object and creates a physical
-			// connection.
+			//instantiate the EmbeddedSQL object and creates a physical
+			//connection.
 			String dbname = args[0];
 			String dbport = args[1];
 			String user = args[2];
 			esql = new EmbeddedSQL (dbname, dbport, user, "");
-
+            //boolean variable to control the main menu loop
 			boolean keepon = true;
 			while(keepon) {
-				// These are sample SQL statements
+				//provide the user with a list of options. this is our menu
 				System.out.println("MAIN MENU");
 				System.out.println("---------");
 				System.out.println("0. Add a new customer");
@@ -186,6 +180,7 @@ public class EmbeddedSQL {
 				System.out.println("9. Query 5: List the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic.");
 				System.out.println("10. < EXIT");
 
+                //switch statement to decide what to do based on the user's menu choice
 				switch (readChoice()) {
 				case 0:
 					AddCustomer(esql);
@@ -223,52 +218,57 @@ public class EmbeddedSQL {
 				default:
 					System.out.println("Unrecognized choice!");
 					break;
-				}//end switch
-			}//end while
-		} catch(Exception e) {
+				}
+			}
+		}
+        catch(Exception e) {
 			System.err.println (e.getMessage ());
-		} finally {
-			// make sure to cleanup the created table and close the connection.
+		} 
+        finally {
+			//make sure to cleanup the created table and close the connection.
 			try {
 				if(esql != null) {
 					System.out.print("Disconnecting from database...");
 					esql.cleanup ();
 					System.out.println("Done\n\nBye !");
-				}//end if
-			} catch (Exception e) {
-				// ignored.
-			}//end try
-		}//end try
-	}//end main
+				}
+			}
+            catch (Exception e) {
+				//ignored.
+			}
+		}
+	}
 
 	public static void Greeting() {
 		System.out.println(
 		    "\n\n*******************************************************\n" +
 		    "              User Interface      	               \n" +
 		    "*******************************************************\n");
-	}//end Greeting
+	}
 
 	/*
-	 * Reads the users choice given from the keyboard
-	 * @int
-	 **/
+	* Reads the users choice given from the keyboard
+	* @int
+	**/
 	public static int readChoice() {
 		int input;
-		// returns only if a correct value is given.
+		//returns only if a correct value is given.
 		do {
 			System.out.print("Please make your choice: ");
-			try { // read the integer, parse it and break.
+            //read the integer, parse it and break.
+			try { 
 				input = Integer.parseInt(in.readLine());
 				break;
-			} catch (Exception e) {
+			} 
+            catch (Exception e) {
 				System.out.println("Your input is invalid!");
 				continue;
-			}//end try
+			}
 		} while (true);
 		return input;
-	}//end readChoice
+	}
 
-	//addcustomer function, which adds a new customer into the database.
+	//AddCustomer function, which adds a new customer into the database.
 	public static void AddCustomer(EmbeddedSQL esql) {
 		try {
 			//variables to store user input
@@ -279,6 +279,7 @@ public class EmbeddedSQL {
 			String Address;
 
 			//from here, do some error handling that checks if the input is correct.
+            //first, validate the customerID
 			while (true) {
 				System.out.print("\tEnter customer ID: ");
 				String customerInput = in.readLine().trim();
@@ -307,13 +308,15 @@ public class EmbeddedSQL {
 					//if we got here, it means the customerID is valid
 					break;
 
-				} catch (NumberFormatException e) {
+				} 
+                catch (NumberFormatException e) {
 					System.out.println("\tError: customer ID must only be numbers!");
 					continue;
 				}
 
 			}
 
+            //next, the customer's first name. read input and validate
 			while (true) {
 				System.out.print("\tEnter customer first name: ");
 				firstName = in.readLine().trim();
@@ -328,6 +331,7 @@ public class EmbeddedSQL {
 				break;
 			}
 
+            //next, the customer's last name. read input and validate
 			while (true) {
 				System.out.print("\tEnter customer last name: ");
 				lastName = in.readLine().trim();
@@ -341,6 +345,8 @@ public class EmbeddedSQL {
 				}
 				break;
 			}
+
+            //next, the customer's phone number. read input and validate
 			while (true) {
 				System.out.print("\tEnter customer's phone number: ");
 				Phone = in.readLine().trim();
@@ -355,7 +361,8 @@ public class EmbeddedSQL {
 				}
 				break;
 			}
-
+        
+            //finally, the customer's address. read input and validate
 			while (true) {
 				System.out.print("\tEnter customer's address: ");
 				Address = in.readLine().trim();
@@ -363,14 +370,14 @@ public class EmbeddedSQL {
 					System.out.println("\tError: customer address cannot be empty!");
 					continue;
 				}
-				//ensures its has number and letter in address like 12 lake drive
+				//ensures it has number and letter in address like 12 lake drive
 				if (!Address.matches(".*\\d+.*") || !Address.matches(".*[a-zA-Z]+.*")) {
 					System.out.println("\tError: Address must contain both numbers and letters.");
 					continue;
 				}
 				break;
 			}
-
+            //all inputs are valid, so we can make the SQL query to insert the new customer into the database
 			String query = "INSERT INTO Customer (customerID, firstName, lastName, Phone, Address) VALUES (";
 			query += customerID + ", ";
 			query += "'" + firstName + "', ";
@@ -380,12 +387,13 @@ public class EmbeddedSQL {
 
 			esql.executeUpdate(query);
 
-		} catch(Exception e) {
+		} 
+        catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end AddCustomer
+	}
 
-	//addMechanic function, which adds a new mechanic into the database
+	//AddMechanic function, which adds a new mechanic into the database
 	public static void AddMechanic(EmbeddedSQL esql)
 	{
 		try {
@@ -395,6 +403,7 @@ public class EmbeddedSQL {
 			String lastName;
 			int yearsofExp;
 
+            //start validating employeeID
 			while (true) {
 				System.out.print("\tEnter employee ID: ");
 				//integer.parseINT will strictly only allow integers. excluding - for negative numbers
@@ -421,16 +430,16 @@ public class EmbeddedSQL {
 						System.out.println("\tError: employee ID already exists! Please enter a different ID.");
 						continue;
 					}
-
 					break;
 
-				} catch (NumberFormatException e) {
+				} 
+                catch (NumberFormatException e) {
 					System.out.println("\tError: employee ID must only be numbers!");
 					continue;
 				}
 
 			}
-
+            //next, the mechanic's first name. read input and validate
 			while (true) {
 				System.out.print("\tEnter mechanic first name: ");
 				firstName = in.readLine().trim();
@@ -444,7 +453,7 @@ public class EmbeddedSQL {
 				}
 				break;
 			}
-
+            //next, the mechanic's last name. read input and validate
 			while (true) {
 				System.out.print("\tEnter mechanic last name: ");
 				lastName = in.readLine().trim();
@@ -458,7 +467,7 @@ public class EmbeddedSQL {
 				}
 				break;
 			}
-
+            //finally, the mechanic's years of experience. read input and validate
 			while (true) {
 				System.out.print("\tEnter employee's years of Experience: ");
 				String employeeYOE = in.readLine().trim();
@@ -473,20 +482,18 @@ public class EmbeddedSQL {
 						continue;
 					}
 					break;
-
-				} catch (NumberFormatException e) {
+				}
+                catch (NumberFormatException e) {
 					System.out.println("\tError: employee's YOE must only be numbers!");
 				}
 			}
 
-
+            //all inputs are valid, so we can make the SQL query to insert the new mechanic into the database
 			String query = "INSERT INTO Mechanic(employeeID, firstName, lastName, yearsOfExp) VALUES ("
 			               + employeeID + ", "
 			               + "'" + firstName + "', "
 			               + "'" + lastName + "', "
 			               + yearsofExp + ")";
-
-
 
 			esql.executeUpdate(query);
 
@@ -494,12 +501,9 @@ public class EmbeddedSQL {
 		catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end addMechanic
+	}
 
-	//addCar function
-	//This function should allow for adding a new car into the database.
-	//You should provide an interface that takes as input the information of a new car
-	//and checks if the provided information are valid based on the constraints of the database schema.
+	//AddCar function, which adds a new car into the database.
 	public static void AddCar(EmbeddedSQL esql) {
 		try {
 			//set up variables for user input
@@ -536,7 +540,7 @@ public class EmbeddedSQL {
 				break;
 			}
 
-			//next up, the Make. read input and validate
+			//next up, the make. read input and validate
 			while(true) {
 				System.out.print("\tEnter Make: ");
 				//handles if the user just presses "enter" without typing anything
@@ -548,7 +552,7 @@ public class EmbeddedSQL {
 				break;
 			}
 
-			//next, the Model. read input and validate
+			//next, the model. read input and validate
 			while(true) {
 				System.out.print("\tEnter Model: ");
 				//again, this handles if user just presses "enter" without typing anything
@@ -560,7 +564,7 @@ public class EmbeddedSQL {
 				break;
 			}
 
-			//moving on to Year. read input and validate
+			//moving on to year. read input and validate
 			while(true) {
 				System.out.print("\tEnter Year: ");
 				String input = in.readLine().trim();
@@ -568,6 +572,7 @@ public class EmbeddedSQL {
 					int inputYear = Integer.parseInt(input);
 					int currentYear = Year.now().getValue();
                     //the first car was invented in 1886, so we can use that as the lower bound for valid years
+                    //this isn't super necesary, but it makes our data a bit more realistic
 					if(inputYear < 1886 || inputYear > currentYear) {
 						System.out.println("Year must be between 1886 and " + currentYear);
 						continue;
@@ -1009,7 +1014,10 @@ public class EmbeddedSQL {
 		}
 	}
 
+    //done with functions! next up, the queries
+    //query 1: list the date, comment, and bill for all closed requests with bill lower than 100
 	public static void Query1(EmbeddedSQL esql) {
+        //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT closeDate, mechComments, finalBill " +
 			               "FROM ServiceRequest " +
@@ -1017,12 +1025,15 @@ public class EmbeddedSQL {
 			               "AND status = 'closed'";
 			int rowCount = esql.executeQuery(query);
 			System.out.println ("total row(s): " + rowCount);
-		} catch(Exception e) {
+		}
+        catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end Query1
+	}
 
+    //query 2: list the first and last name of customers having more than 20 different cars
 	public static void Query2(EmbeddedSQL esql) {
+        //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT C.firstName, C.lastName " +
 			               "FROM Customer C, Car CS " +
@@ -1032,12 +1043,15 @@ public class EmbeddedSQL {
 
 			int rowCount = esql.executeQuery(query);
 			System.out.println ("total row(s): " + rowCount);
-		} catch(Exception e) {
+		}
+        catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end Query2
+	}
 
+    //query 3: list the make, model, and year of all cars built before 1995 having less than 50000 miles
 	public static void Query3(EmbeddedSQL esql) {
+        //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT DISTINCT CS.Make, CS.Model, CS.Year " +
 			               "FROM Car CS, ServiceRequest S " +
@@ -1047,16 +1061,20 @@ public class EmbeddedSQL {
 
 			int rowCount = esql.executeQuery(query);
 			System.out.println ("total row(s): " + rowCount);
-		} catch(Exception e) {
+		} 
+        catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end Query3
+	}
 
+    //query 4: list the make, model and number of service requests for the first k cars with the highest number of service orders.
 	public static void Query4(EmbeddedSQL esql) {
+        //create the SQL query as a string, execute it, and print the number of rows returned
+        //though this time, we also need to get user input for how many results
+        //they want to see. so we need to validate that input before we run the query
 		try {
-
 			int input;
-
+            //validate user input for number of results to show
 			while (true) {
 				System.out.print("\tEnter number of car results you would like to see: ");
 				String customerInput = in.readLine().trim();
@@ -1077,7 +1095,7 @@ public class EmbeddedSQL {
 				}
 			}
 
-
+            //validation done. now we run it and print out the result
 			String query = "SELECT CS.Make, CS.Model, COUNT(S.requestID) AS num_requests " +
 			               "FROM Car CS, ServiceRequest S " +
 			               "WHERE CS.VIN = S.associatedCarVIN " +
@@ -1093,9 +1111,11 @@ public class EmbeddedSQL {
 		catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end Query4
+	}
 
+    //finally, query 5: list the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic.
 	public static void Query5(EmbeddedSQL esql) {
+        //create the SQL query as a string, execute it, and print the number of rows returned
 		try {
 			String query = "SELECT C.firstName, C.lastName, SUM(S.finalBill) AS total_bill " +
 			               "FROM Customer C, ServiceRequest S " +
@@ -1108,8 +1128,9 @@ public class EmbeddedSQL {
 
 			int rowCount = esql.executeQuery(query);
 			System.out.println ("total row(s): " + rowCount);
-		} catch(Exception e) {
+		} 
+        catch(Exception e) {
 			System.err.println (e.getMessage());
 		}
-	}//end Query5
+	}
 }

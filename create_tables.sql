@@ -84,6 +84,8 @@ CREATE TABLE ServiceRequest (
 );
 
 --create indexes to improve query performance
+--the rule we followed was to create indexes on the attributes that are commonly used
+--in WHEREs or JOINs in our queries
 CREATE INDEX customer_ln_index ON Customer(lastName);
 CREATE INDEX car_ownerID_index ON Car(ownerID);
 CREATE INDEX car_year_index ON Car(Year);
@@ -91,7 +93,7 @@ CREATE INDEX car_servicerequest_index ON ServiceRequest(associatedCarVIN);
 CREATE INDEX cust_servicerequest_index ON ServiceRequest(customerID);
 CREATE INDEX servicerequest_status_index ON ServiceRequest(status);
 
--- Load data
+--load data from csv files
 \copy Customer FROM 'Customer.csv' WITH (FORMAT text, DELIMITER ',');
 \copy Car FROM 'Car.csv' WITH (FORMAT text, DELIMITER ',');
 \copy Mechanic FROM 'Mechanic.csv' WITH (FORMAT text, DELIMITER ',');
